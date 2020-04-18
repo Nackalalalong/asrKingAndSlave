@@ -31,10 +31,10 @@ public class GameControl : MonoBehaviour
         player4 = new List<Card>();
         deck = new List<Card>();
 
-        initDeck();
+        InitDeck();
     }   
 
-    private void initDeck(){
+    private void InitDeck(){
         foreach(CARD_RANK rank in System.Enum.GetValues(typeof(CARD_RANK))){
             foreach(CARD_SUIT suit in System.Enum.GetValues(typeof(CARD_SUIT))){
                 deck.Add(new Card(rank,suit));
@@ -48,7 +48,7 @@ public class GameControl : MonoBehaviour
         
     }
 
-    private void dealCards(){  // แจกไพ่ตอนต้นเกม
+    private void DealCards(){  // แจกไพ่ตอนต้นเกม
         int player = 1;
         System.Random rnd = new System.Random();
         while( deck.Count > 0 ){
@@ -73,11 +73,11 @@ public class GameControl : MonoBehaviour
         }
     }
 
-    public void longCard( Card card){   // ลงการ์ด
+    public void LongCard( Card card){   // ลงการ์ด
         board.Add(card);
     }
 
-    private void endTurn(){
+    private void EndTurn(){
 
     }
 

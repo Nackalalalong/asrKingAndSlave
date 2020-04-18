@@ -5,6 +5,7 @@ using UnityEngine;
 public class CardControl : MonoBehaviour
 {
     private Card card;
+    private bool isFacing = true;
 
     // Start is called before the first frame update
     void Start()
@@ -18,11 +19,15 @@ public class CardControl : MonoBehaviour
         
     }
 
-    public CARD_RANK getRank(){
+    public CARD_RANK GetRank(){
         return card.getRank();
     }
 
     public CARD_SUIT GetSuit(){
         return card.getSuit();
+    }
+
+    public bool IsFacing(){
+        return isFacing;
     }
 }

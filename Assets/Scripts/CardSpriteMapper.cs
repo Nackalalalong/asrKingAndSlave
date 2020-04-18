@@ -5,6 +5,7 @@ using UnityEngine;
 public class CardSpriteMapper : MonoBehaviour
 {
     public Sprite[] cardSprite;
+    public Sprite backCard;
 
     // Start is called before the first frame update
     void Start()
@@ -18,10 +19,16 @@ public class CardSpriteMapper : MonoBehaviour
         
     }
 
-    public void mapCard(GameObject cardGameObject){ // map rank,suit of a card to card sprites index
+    public void MapCard(GameObject cardGameObject){ // map rank,suit of a card to card sprites index
+
+        CardControl cardControl = cardGameObject.GetComponent<CardControl>();
+        if ( !cardControl.IsFacing() ){
+            cardGameObject.GetComponent<SpriteRenderer>().sprite = backCard;
+        }
+
         int index = 0;
-        CARD_RANK rank = cardGameObject.GetComponent<CardControl>().getRank();
-        CARD_SUIT suit = cardGameObject.GetComponent<CardControl>().GetSuit();
+        CARD_RANK rank = cardControl.GetRank();
+        CARD_SUIT suit = cardControl.GetSuit();
 
         index += 13 * ((int)suit);
         index += (int)rank;

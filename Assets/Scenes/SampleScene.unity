@@ -954,6 +954,11 @@ PrefabInstance:
       propertyPath: dealingCardSpeed
       value: 15
       objectReference: {fileID: 0}
+    - target: {fileID: 5927436112125951465, guid: 66a78f4983a13a941ab9302c12516db9,
+        type: 3}
+      propertyPath: cardInHandOffset
+      value: 0.5
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 66a78f4983a13a941ab9302c12516db9, type: 3}
 --- !u!1001 &1183565332379029202
@@ -1035,7 +1040,7 @@ PrefabInstance:
     - target: {fileID: 7879585218618389930, guid: 29079889ea63eb644b8abd2dfbd29ac8,
         type: 3}
       propertyPath: m_Name
-      value: SampleCard
+      value: Card
       objectReference: {fileID: 0}
     - target: {fileID: 7879585218618389930, guid: 29079889ea63eb644b8abd2dfbd29ac8,
         type: 3}
@@ -1100,12 +1105,12 @@ PrefabInstance:
     - target: {fileID: 8114049953860367205, guid: 29079889ea63eb644b8abd2dfbd29ac8,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.35
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 8114049953860367205, guid: 29079889ea63eb644b8abd2dfbd29ac8,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.35
+      value: 0.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 29079889ea63eb644b8abd2dfbd29ac8, type: 3}
@@ -1124,6 +1129,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 3543251811134126701}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c8233968d5bd564192c3945a96e2eb7, type: 3}
+  m_Script: {fileID: 11500000, guid: a2b93ffdf5d2054498d7b07ef29c7537, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

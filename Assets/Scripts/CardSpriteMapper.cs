@@ -19,20 +19,45 @@ public class CardSpriteMapper : MonoBehaviour
         
     }
 
-    public void MapCard(GameObject cardGameObject){ // map rank,suit of a card to card sprites index
-
-        CardControl cardControl = cardGameObject.GetComponent<CardControl>();
-        if ( !cardControl.IsFacing() ){
-            cardGameObject.GetComponent<SpriteRenderer>().sprite = backCard;
-        }
+    public void MapCard(GameObject cardGameObject, int player){ // map rank,suit of a card to card sprites index
+        CardController cardControl = cardGameObject.GetComponent<CardController>();
 
         int index = 0;
-        CARD_RANK rank = cardControl.GetRank();
+        int rank = (int)cardControl.GetRank();
         CARD_SUIT suit = cardControl.GetSuit();
 
-        index += 13 * ((int)suit);
-        index += (int)rank;
+        switch (suit)
+        {
+            case CARD_SUIT.HEART:
+                index = 0 ;
+                break;
+            case CARD_SUIT.CLUB:
+                index = 13;
+                break;
+            case CARD_SUIT.DIAMOND:
+                index = 26;
+                break;
+            case CARD_SUIT.SPRADE:
+                index = 39;
+                break;
+        }
 
-        cardGameObject.GetComponent<SpriteRenderer>().sprite = cardSprite[index];
+        rank += 2; // refered to enum
+        if ( rank > 12 ){
+            rank -= 13;
+        }
+        
+        index += rank;
+        // if ( player != 1){
+        //     cardControl.SetFace(false);
+        // }
+        if ( !cardControl.IsFacing() ){
+            cardGameObject.GetComponent<SpriteRenderer>().sprite = backCard;
+            cardGameObject.transform.localScale = new Vector3(0.35f, 0.35f, 1);
+        }
+        else {
+            cardGameObject.GetComponent<SpriteRenderer>().sprite = cardSprite[index];
+        }
+
     }
 }

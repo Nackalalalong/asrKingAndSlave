@@ -25,6 +25,7 @@ public class GameController : MonoBehaviour
     public float cardInHandOffset = 0.5f;
 
     public GameObject sampleCard;
+    public GameObject deckForDeal;
     public Transform player1Hand, player2Hand, player3Hand, player4Hand; 
 
     private int turn = 1; // 1 is player, 2,3,4 are bot
@@ -101,6 +102,10 @@ public class GameController : MonoBehaviour
             Debug.Log("remaining " + deck.Count);
             int index = rnd.Next(0, deck.Count);
             Card card = deck[index];
+
+            if ( deck.Count == 1){
+                deckForDeal.SetActive(false);
+            }
 
             AnimateDealCard(player, card);
 
@@ -179,6 +184,13 @@ public class GameController : MonoBehaviour
 
     private void EndTurn(){
 
+    }
+
+    public string GetCommand(){
+
+        
+
+        return "";
     }
 
 

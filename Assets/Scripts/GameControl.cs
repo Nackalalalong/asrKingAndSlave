@@ -19,6 +19,12 @@ public class GameControl : MonoBehaviour
     public List<Card> player1, player2, player3, player4;
     private List<Card> board;
 
+    public float dealingCardSpeed = 10.0f;
+    public float dealingCardDeltaTime = 0.1f;
+
+    public GameObject sampleCard;
+    public Transform player1Hand, player2Hand, player3Hand, player4Hand; 
+
     private int turn = 1; // 1 is player, 2,3,4 are bot
 
     // Start is called before the first frame update
@@ -45,15 +51,48 @@ public class GameControl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if ( Input.GetKeyDown(KeyCode.T) ){
+            Debug.Log("start dealing cards");
+            StartCoroutine(DealCards());
+        }
     }
 
-    private void DealCards(){  // แจกไพ่ตอนต้นเกม
+    public void AnimateDealCard(int player){
+        GameObject dealingCard = Instantiate(sampleCard);
+        SampleCardController sampleCardController = dealingCard.GetComponent<SampleCardController>();
+        if ( player % 2 == 0 ){
+            dealingCard.transform.localEulerAngles = new Vector3(0,0,90);
+        }
+        switch (player)
+        {
+            case 1: 
+                sampleCardController.SetTarget(player1Hand);
+                break;
+            case 2:
+                sampleCardController.SetTarget(player2Hand);
+                break;
+            case 3:
+                sampleCardController.SetTarget(player3Hand);
+                break;
+            case 4:
+                sampleCardController.SetTarget(player4Hand);
+                break;
+        }
+        sampleCardController.SetSpeed(dealingCardSpeed);
+        dealingCard.SetActive(true);
+    }
+
+    private IEnumerator DealCards(){  // แจกไพ่ตอนต้นเกม
         int player = 1;
         System.Random rnd = new System.Random();
         while( deck.Count > 0 ){
+
+            yield return new WaitForSeconds(dealingCardDeltaTime);
+            Debug.Log("remaining " + deck.Count);
             int index = rnd.Next(0, deck.Count);
             Card card = deck[index];
+
+            AnimateDealCard(player);
 
             if ( player == 1 ){
                 player1.Add(card);

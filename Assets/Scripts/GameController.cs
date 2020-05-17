@@ -18,7 +18,11 @@ public class GameController : MonoBehaviour
     private List<Card> deck;
     public List<GameObject> player1, player2, player3, player4;
     private List<GameObject> board;
+    private List<bool> playerPass;
     private CardSpriteMapper spriteMapper;
+    private CommandController commandController;
+    private int turn = 1; // 1 is player, 2,3,4 are bot
+    private bool isPlaying = true;
 
     public float dealingCardSpeed = 10.0f;
     public float dealingCardDeltaTime = 0.1f;
@@ -27,8 +31,6 @@ public class GameController : MonoBehaviour
     public GameObject sampleCard;
     public GameObject deckForDeal;
     public Transform player1Hand, player2Hand, player3Hand, player4Hand; 
-
-    private int turn = 1; // 1 is player, 2,3,4 are bot
 
     // Start is called before the first frame update
     void Start()
@@ -39,8 +41,10 @@ public class GameController : MonoBehaviour
         player3 = new List<GameObject>();
         player4 = new List<GameObject>();
         deck = new List<Card>();
+        playerPass = new List<bool>{false, false, false, false};
 
         spriteMapper = GetComponent<CardSpriteMapper>();
+        commandController = GetComponent<CommandController>();
 
         InitDeck();
     }   
@@ -59,6 +63,10 @@ public class GameController : MonoBehaviour
         if ( Input.GetKeyDown(KeyCode.T) ){
             Debug.Log("start dealing cards");
             StartCoroutine(DealCards());
+        }
+
+        if ( !isPlaying ){
+            Play();
         }
     }
 
@@ -117,6 +125,8 @@ public class GameController : MonoBehaviour
         SortCardsInHand(player2, player2Hand, 2);
         SortCardsInHand(player3, player3Hand, 3);
         SortCardsInHand(player4, player4Hand, 4);
+
+        Play();
     }
 
     private void SortCardsInHand(List<GameObject> hand, Transform midTf, int player){
@@ -178,19 +188,69 @@ public class GameController : MonoBehaviour
 
     }
 
-    public void LongCard( GameObject card){   // ลงการ์ด
+    private void Play(){
+        isPlaying = true;
+
+        if ( playerPass[turn] ){
+            ShowPlayerHasPassed();
+            GoNextTurn();
+        }
+        else if ( AreOthersAllPass() ){
+            NewRound();
+        }
+        else {
+            commandController.PutOrPass();
+            if ( commandController.IsPutCommand() ){
+
+            }
+            else {  // pass command
+                
+            }
+
+            List<int> putDecision;
+            do
+            {
+                commandController.PutDecision();
+                putDecision = commandController.GetPutDecision();
+            } while ( !IsPutDecisionValid(putDecision) );
+
+            PutCard(putDecision);
+            GoNextTurn();
+            
+        }
+    }
+
+    private bool IsPutDecisionValid(List<int> putDecision){
+        return true;
+    }
+
+    private void GoNextTurn(){
+            turn = (turn % 4) + 1;
+            isPlaying = false;
+    }
+
+    private void ShowPlayerHasPassed(){
+
+    }
+
+    private bool AreOthersAllPass(){
+        return playerPass[turn] && !(playerPass[(turn%4)+1] || playerPass[(turn%4)+2] || playerPass[(turn%4)+3]);
+    }
+
+    private void NewRound(){
+
+    }
+
+    private void PutCard(List<int> putDecision){
+
+    }
+
+    private void AnimatePutCard( GameObject card){   // ลงการ์ด
         board.Add(card);
     }
 
-    private void EndTurn(){
-
-    }
-
-    public string GetCommand(){
-
-        
-
-        return "";
+    private int GetTurn(){
+        return turn;
     }
 
 

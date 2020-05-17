@@ -27,8 +27,10 @@ public class GameController : MonoBehaviour
     private CommandController commandController;
     private int turn = 1; // 1 is player, 2,3,4 are bot
     private int turnState = 0; // 0 -> putOrPass, 1 -> waitForPutOrPass, 2 -> putDecision, 3 -> waitForPutDecision 
-    private bool isPlaying = true;
+    private bool isPlaying = false;
     private bool isBotPlaying = false;
+    private bool isGameOver = false;
+    private int winner = 1;
     private  PUT_TYPE boardPutType = PUT_TYPE.ANY;
 
     public float dealingCardSpeed = 10.0f;
@@ -40,6 +42,7 @@ public class GameController : MonoBehaviour
     public GameObject deckForDeal;
     public Transform player1Hand, player2Hand, player3Hand, player4Hand; 
     public Transform boardCenter;
+    public GameObject arrowPlayer1, arrowPlayer2, arrowPlayer3, arrowPlayer4;
 
     // Start is called before the first frame update
     void Start()
@@ -74,15 +77,22 @@ public class GameController : MonoBehaviour
             StartCoroutine(DealCards());
         }
 
-        if ( isPlaying ){
-            if ( turn == 1 ){
-                Play();
-            }
-            else if ( !isBotPlaying ){
-                isBotPlaying = true;
-                StartCoroutine(BotPlay());
+        if ( isGameOver ){
+
+        }
+        else {
+            if ( isPlaying ){
+                if ( turn == 1 ){
+                    Play();
+                }
+                else if ( !isBotPlaying ){
+                    isBotPlaying = true;
+                    StartCoroutine(BotPlay());
+                }
             }
         }
+
+        
     }
 
     public void AnimateDealCard(int player, Card card){
@@ -217,6 +227,7 @@ public class GameController : MonoBehaviour
             NewRound();
         }
         else {
+            arrowPlayer1.SetActive(true);
             if ( turnState == 0 ){
                 commandController.PutOrPass();
                 turnState = 1;
@@ -258,6 +269,22 @@ public class GameController : MonoBehaviour
 
     private IEnumerator BotPlay(){
 
+        switch (turn)
+        {
+            case 1:
+                arrowPlayer1.SetActive(true);
+                break;
+            case 2:
+                arrowPlayer2.SetActive(true);
+                break;
+            case 3:
+                arrowPlayer3.SetActive(true);
+                break;
+            case 4:
+                arrowPlayer4.SetActive(true);
+                break;
+        }
+
         yield return new WaitForSeconds(startTurnDelayTime); 
 
         if ( playerPass[turn-1] ){
@@ -269,13 +296,14 @@ public class GameController : MonoBehaviour
         }
         else {
             Debug.Log("Bot play " + turn);
+           
 
             List<int> putDecision = new List<int>();
             List<GameObject> hand = GetHand();
             
             if ( boardPutType == PUT_TYPE.ANY ){
                 
-
+                boardPutType = PUT_TYPE.SOLO;
                 putDecision.Add(0); // putType solo
                 putDecision.Add((int)hand[0].GetComponent<CardController>().GetRank());
                 putDecision.Add(-1);
@@ -421,6 +449,21 @@ public class GameController : MonoBehaviour
     }
 
     private void GoNextTurn(){
+            switch (turn)
+            {
+                case 1:
+                    arrowPlayer1.SetActive(false);
+                    break;
+                case 2:
+                    arrowPlayer2.SetActive(false);
+                    break;
+                case 3:
+                    arrowPlayer3.SetActive(false);
+                    break;
+                case 4:
+                    arrowPlayer4.SetActive(false);
+                    break;
+            }
             turn = (turn % 4) + 1;
             turnState = 0;
             isBotPlaying = false;
@@ -461,12 +504,25 @@ public class GameController : MonoBehaviour
 
         for(int i=0; i<cardsToPut.Count; ++i){
             cardsToPut[i].transform.localEulerAngles = new Vector3(0,0,0);
+            spriteMapper.MapCard(cardsToPut[i], 1);
             board.Add(cardsToPut[i]);
         }
         SpacingCards(cardsToPut, boardCenter);
 
          for(int i=0; i<board.Count; ++i){
             board[i].GetComponent<SpriteRenderer>().sortingOrder = i;
+        }
+
+        CheckWinner();
+        SpacingCards(GetHand(), GetHandCenter(), turn);
+    }
+
+    private void CheckWinner(){
+        List<GameObject> hand = GetHand();
+        if ( hand.Count == 0 ){
+            isGameOver = true;
+            winner = turn;
+            Debug.Log("GameOver winner is " + winner);
         }
     }
 
@@ -523,7 +579,26 @@ public class GameController : MonoBehaviour
         return hand;
     }
 
+    private Transform GetHandCenter(){
+        Transform midTf = player1Hand;
+        switch (turn)
+        {
+            case 1 : 
+                midTf = player1Hand;
+                break;
+            case 2 :
+                midTf = player2Hand;
+                break;
+            case 3 :
+                midTf = player3Hand;
+                break;
+            case 4 : 
+                midTf = player4Hand;
+                break;
+        }
 
+        return midTf;
+    }
 
 
 }

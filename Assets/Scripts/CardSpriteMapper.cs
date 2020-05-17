@@ -48,15 +48,19 @@ public class CardSpriteMapper : MonoBehaviour
         }
         
         index += rank;
-        // if ( player != 1){
-        //     cardControl.SetFace(false);
-        // }
+        if ( player != 1){
+            cardControl.SetFace(false);
+        }
+        else {
+            cardControl.SetFace(true);
+        }
         if ( !cardControl.IsFacing() ){
             cardGameObject.GetComponent<SpriteRenderer>().sprite = backCard;
             cardGameObject.transform.localScale = new Vector3(0.35f, 0.35f, 1);
         }
         else {
             cardGameObject.GetComponent<SpriteRenderer>().sprite = cardSprite[index];
+            cardGameObject.transform.localScale = new Vector3(0.5f, 0.5f, 1);
         }
 
     }

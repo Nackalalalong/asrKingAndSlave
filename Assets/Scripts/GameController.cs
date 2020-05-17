@@ -10,6 +10,10 @@ public enum CARD_SUIT {
     SPRADE, DIAMOND, HEART, CLUB
 }
 
+enum PUT_TYPE {
+    SOLO, PAIR, TRIPPLE, QUAD, ANY
+}
+
 public class GameController : MonoBehaviour
 {
 
@@ -24,14 +28,18 @@ public class GameController : MonoBehaviour
     private int turn = 1; // 1 is player, 2,3,4 are bot
     private int turnState = 0; // 0 -> putOrPass, 1 -> waitForPutOrPass, 2 -> putDecision, 3 -> waitForPutDecision 
     private bool isPlaying = true;
+    private bool isBotPlaying = false;
+    private  PUT_TYPE boardPutType = PUT_TYPE.ANY;
 
     public float dealingCardSpeed = 10.0f;
     public float dealingCardDeltaTime = 0.1f;
     public float cardInHandOffset = 0.5f;
+    public float startTurnDelayTime = 1.5f;
 
     public GameObject sampleCard;
     public GameObject deckForDeal;
     public Transform player1Hand, player2Hand, player3Hand, player4Hand; 
+    public Transform boardCenter;
 
     // Start is called before the first frame update
     void Start()
@@ -67,7 +75,13 @@ public class GameController : MonoBehaviour
         }
 
         if ( isPlaying ){
-            Play();
+            if ( turn == 1 ){
+                Play();
+            }
+            else if ( !isBotPlaying ){
+                isBotPlaying = true;
+                StartCoroutine(BotPlay());
+            }
         }
     }
 
@@ -133,8 +147,12 @@ public class GameController : MonoBehaviour
     private void SortCardsInHand(List<GameObject> hand, Transform midTf, int player){
         hand.Sort(CardComparator);
 
+        SpacingCards(hand, midTf, player);
+    }
+
+    private void SpacingCards(List<GameObject> cards, Transform midTf, int player = 1, int sortOrderStart = 0){
         // set sort layer order and spread cards in hand
-        int count = hand.Count;
+        int count = cards.Count;
         int mid = count / 2;
         Vector3 mostLeftCenter;
         if ( player % 2 == 1){
@@ -145,8 +163,8 @@ public class GameController : MonoBehaviour
         }
         
         for(int index=0; index<count; ++index){
-            GameObject gameObject = hand[index];
-            gameObject.GetComponent<SpriteRenderer>().sortingOrder = index;
+            GameObject gameObject = cards[index];
+            gameObject.GetComponent<SpriteRenderer>().sortingOrder = index + sortOrderStart;
 
             CardController cardController = gameObject.GetComponent<CardController>();
             Vector3 targetPos;
@@ -159,7 +177,6 @@ public class GameController : MonoBehaviour
             
             cardController.SetTarget(targetPos);
         }
-
     }
 
     private int CardComparator(GameObject x, GameObject y){ // 1 -> x > y
@@ -203,14 +220,15 @@ public class GameController : MonoBehaviour
             if ( turnState == 0 ){
                 commandController.PutOrPass();
                 turnState = 1;
+                Debug.Log("your turn, press 1 to Put press 2 to pass");
             }
             else if ( turnState == 1 ){
                 if ( commandController.IsPutCommand() ){
-                    // todo
                     turnState = 2;
+                    Debug.Log("press 3 to put the decision");
                 }
                 else if ( commandController.IsPassCommand() ){
-                    // TODO
+                    playerPass[turn-1] = true;
                     GoNextTurn();
                 }
                 // wait for command
@@ -219,12 +237,17 @@ public class GameController : MonoBehaviour
                 commandController.PutDecision();
                 turnState = 3;
             }
-            else if ( turnState == 3){
+            else if ( turnState == 3 && commandController.IsPutDecisionReady() ){
+                Debug.Log("processing turn state 3");
                 List<int> putDecision = commandController.GetPutDecision();
                 if ( !IsPutDecisionValid(putDecision) ){
+                    Debug.Log("decision invalid");
+                    ShowPutDecisionInvalid();
                     turnState = 2;
                 }
                 else {
+                    Debug.Log("decision valid");
+                    boardPutType = (PUT_TYPE)putDecision[0];
                     PutCard(putDecision);
                     GoNextTurn();
                 }
@@ -233,13 +256,169 @@ public class GameController : MonoBehaviour
         }
     }
 
+    private IEnumerator BotPlay(){
+
+        yield return new WaitForSeconds(startTurnDelayTime); 
+
+        if ( playerPass[turn-1] ){
+            ShowPlayerHasPassed();
+            GoNextTurn();
+        }
+        else if ( AreOthersAllPass() ){
+            NewRound();
+        }
+        else {
+            List<int> putDecision = new List<int>();
+            List<GameObject> hand = GetHand();
+            
+            if ( boardPutType == PUT_TYPE.ANY ){
+                
+
+                putDecision.Add(0); // putType solo
+                putDecision.Add((int)hand[0].GetComponent<CardController>().GetRank());
+                putDecision.Add(-1);
+            }
+            else {
+                List<int> decision = GetMinimumPutDecision();
+
+                if ( decision == null ){
+                    Debug.Log("Bot " + turn + " pass");
+                    playerPass[turn-1] = true;
+                    GoNextTurn();
+                }
+                else {
+                    PutCard(decision);
+                    GoNextTurn();
+                }
+                
+            }
+        }
+
+        
+    }
+
+    private List<int> GetMinimumPutDecision(){
+        List<GameObject> hand = GetHand();
+        List<int> decision;
+        
+        for(int rank=(int)hand[0].GetComponent<CardController>().GetRank();
+                rank<(int)hand[hand.Count-1].GetComponent<CardController>().GetRank();
+                ++rank){
+                    decision = new List<int>{(int)boardPutType, rank, -1};
+                    if ( IsPutDecisionValid(decision) ){
+                        return decision;
+                    }
+                }
+
+        return null;
+    }
+
+    private void ShowPutDecisionInvalid(){
+
+    }
+
     private bool IsPutDecisionValid(List<int> putDecision){
-        return true;
+
+        List<GameObject> hand = GetHand();
+
+        bool legal = IsDecisionLegal(putDecision, hand);
+        bool enough = HasEnoughCard(putDecision, hand);
+
+        return legal && enough; 
+    }   
+
+    private bool IsDecisionLegal(List<int> putDecision, List<GameObject> hand){
+
+        if ( boardPutType == PUT_TYPE.ANY ){
+            return true;
+        }
+
+        int putType = putDecision[0];
+        int rank = putDecision[1];
+        int suit = putDecision[2];
+
+        if ( boardPutType == PUT_TYPE.SOLO && putType == (int)PUT_TYPE.TRIPPLE ){
+           return true;
+        }
+        else if ( boardPutType == PUT_TYPE.PAIR && putType == (int)PUT_TYPE.QUAD ){
+            return true;
+        }
+        else if ( (int)boardPutType != putType ){
+            return false;
+        }
+
+        // ลงเหมือนกัน
+        CARD_RANK topBoardRank = board[board.Count-1].GetComponent<CardController>().GetRank();
+        CARD_SUIT topBoardSuit = board[board.Count-1].GetComponent<CardController>().GetSuit();
+
+        if ( (int)topBoardRank > rank ){    // ลงเลขต่ำกว่าบอร์ด
+            return false;   
+        }
+        else if ( (int)topBoardRank < rank ){   // ลงเลขสูงกว่า
+            return true; 
+        }
+
+        // ลงเลขเท่ากัน
+        CARD_SUIT playerMaxSuit = CARD_SUIT.SPRADE;
+        for(int i=0; i<hand.Count; ++i){
+            CardController controller = hand[i].GetComponent<CardController>();
+            if ( (int)controller.GetRank() == rank ){
+                if ( controller.GetSuit() > playerMaxSuit ){
+                    playerMaxSuit = controller.GetSuit();
+                }
+            }
+        }
+
+        if ( playerMaxSuit > topBoardSuit ){
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool HasEnoughCard(List<int> putDecision, List<GameObject> hand){ // type, rank, suit
+
+        int putType = putDecision[0];
+        int rank = putDecision[1];
+        int suit = putDecision[2];
+
+        if ( putType == (int)PUT_TYPE.SOLO ){
+            return CountCardInHand(hand, rank, suit) == 1;
+        }
+        else if ( putType == (int)PUT_TYPE.PAIR ){
+            return CountCardInHand(hand, rank) > 1;
+        }
+        else if ( putType == (int)PUT_TYPE.TRIPPLE ){
+            return CountCardInHand(hand, rank) > 2;
+        }
+        else if ( putType == (int)PUT_TYPE.QUAD ){
+            return CountCardInHand(hand, rank) == 4;
+        }
+
+        return false;
+    }
+
+    private int CountCardInHand(List<GameObject> hand, int rank, int suit = -1){
+        int count = 0;
+        for(int i=0; i<hand.Count; ++i){
+            CardController controller = hand[i].GetComponent<CardController>();
+            if ( (int)controller.GetRank() == rank ){
+                if ( suit >= 0 && (int)controller.GetSuit() == suit){
+                    count += 1;
+                }
+                else if ( suit < 0) {
+                    count +=1 ;
+                }
+            }
+        }
+
+        return count;
     }
 
     private void GoNextTurn(){
             turn = (turn % 4) + 1;
             turnState = 0;
+            isBotPlaying = false;
             Debug.Log("go next turn: " + turn);
     }
 
@@ -248,27 +427,98 @@ public class GameController : MonoBehaviour
     }
 
     private bool AreOthersAllPass(){
-        return playerPass[turn-1] && !(playerPass[(turn-1%4)+1] || playerPass[(turn-1%4)+2] || playerPass[(turn-1%4)+3]);
+        // Debug.Log(playerPass[0] + " " + playerPass[1] + " " + playerPass[2] + " " + playerPass[3] + " ");
+        return !playerPass[turn-1] && playerPass[(turn)%4] && playerPass[(turn+1)%4] && playerPass[(turn+2)%4];
     }
 
     private void NewRound(){
+        Debug.Log("new round");
         for(int i=0; i<4; ++i){
             playerPass[i] = false;
         }
         turnState = 0;
+        boardPutType = PUT_TYPE.ANY;
+        for(int index=board.Count - 1; index>=0; --index){
+            Destroy(board[index]);
+        }
+        board.Clear();
+        isBotPlaying = false;
     }
 
     private void PutCard(List<int> putDecision){
+        List<GameObject> cardsToPut = GetCardsDecision(putDecision);
+        cardsToPut.Sort(CardComparator);
+        Debug.Log("cardsToPut count: " + cardsToPut.Count);
+
+        for(int i=0; i<board.Count; ++i){
+            board[i].GetComponent<SpriteRenderer>().sortingOrder = -2;
+        }
+
+        for(int i=0; i<cardsToPut.Count; ++i){
+            cardsToPut[i].transform.localEulerAngles = new Vector3(0,0,0);
+            board.Add(cardsToPut[i]);
+        }
+        SpacingCards(cardsToPut, boardCenter);
+
+         for(int i=0; i<board.Count; ++i){
+            board[i].GetComponent<SpriteRenderer>().sortingOrder = i;
+        }
+    }
+
+    private List<GameObject> GetCardsDecision(List<int> putDecision){   // assume that pusDecision is valid
+
+        List<GameObject> hand = GetHand();
+
+        int putType = putDecision[0];
+        int rank = putDecision[1];
+        int suit = putDecision[2];
+
+        List<GameObject> cardsToPut = new List<GameObject>();
+        List<int> indexes = new List<int>();
+
+        for(int index=0; index<hand.Count; ++index){
+            CardController controller = hand[index].GetComponent<CardController>();
+            if ( rank == (int)controller.GetRank() ){
+                indexes.Add(index);
+            }
+        }
+
+        while( indexes.Count > putType + 1 ){
+            indexes.RemoveAt(indexes.Count - 1);
+        }
+
+        for(int i=indexes.Count - 1; i>=0; --i){
+            int index = indexes[i];
+            cardsToPut.Add(hand[index]);
+            hand.RemoveAt(index);
+        }
+
+        return cardsToPut;
 
     }
 
-    private void AnimatePutCard( GameObject card){   // ลงการ์ด
-        board.Add(card);
+    private List<GameObject> GetHand(){
+        List<GameObject> hand = player1;
+        switch (turn)
+        {
+            case 1 : 
+                hand = player1;
+                break;
+            case 2 :
+                hand = player2;
+                break;
+            case 3 :
+                hand = player3;
+                break;
+            case 4 : 
+                hand = player4;
+                break;
+        }
+
+        return hand;
     }
 
-    private int GetTurn(){
-        return turn;
-    }
+
 
 
 }

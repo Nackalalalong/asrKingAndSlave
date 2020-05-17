@@ -2,10 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-enum PUT_TYPE {
-    SOLO, PAIR, TRIPPLE, QUARD
-}
-
 public class CommandController : MonoBehaviour
 {
     private string command;
@@ -25,7 +21,16 @@ public class CommandController : MonoBehaviour
     }
 
     public void PutDecision(){ // return true if commmand valid for the purpose
-        
+        StartCoroutine(waitForKeyPress());
+    }
+
+    public bool IsPutDecisionReady(){
+        if ( testInput == 3){
+            testInput = 0;
+            Debug.Log("decision ready");
+            return true;
+        }
+        return false;
     }
 
     public List<int> GetPutDecision()  // PUT_TYPE, RANK, SUIT
@@ -69,8 +74,13 @@ public class CommandController : MonoBehaviour
                 done = true; // breaks the loop
             }
             else if ( Input.GetKeyDown(KeyCode.Alpha2)){
-                testInput = 1;
+                testInput = 2;
                 Debug.Log("test input 2");
+                done = true; // breaks the loop
+            }
+            else if ( Input.GetKeyDown(KeyCode.Alpha3) ){
+                testInput = 3;
+                Debug.Log("test input 3");
                 done = true; // breaks the loop
             }
             yield return null; // wait until next frame, then continue execution from here (loop continues)

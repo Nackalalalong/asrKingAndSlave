@@ -268,6 +268,8 @@ public class GameController : MonoBehaviour
             NewRound();
         }
         else {
+            Debug.Log("Bot play " + turn);
+
             List<int> putDecision = new List<int>();
             List<GameObject> hand = GetHand();
             
@@ -277,6 +279,9 @@ public class GameController : MonoBehaviour
                 putDecision.Add(0); // putType solo
                 putDecision.Add((int)hand[0].GetComponent<CardController>().GetRank());
                 putDecision.Add(-1);
+
+                PutCard(putDecision);
+                GoNextTurn();
             }
             else {
                 List<int> decision = GetMinimumPutDecision();

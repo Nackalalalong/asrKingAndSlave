@@ -22,6 +22,7 @@ public class GameController : MonoBehaviour
     private CardSpriteMapper spriteMapper;
     private CommandController commandController;
     private int turn = 1; // 1 is player, 2,3,4 are bot
+    private int turnState = 0; // 0 -> putOrPass, 1 -> waitForPutOrPass, 2 -> putDecision, 3 -> waitForPutDecision 
     private bool isPlaying = true;
 
     public float dealingCardSpeed = 10.0f;
@@ -65,7 +66,7 @@ public class GameController : MonoBehaviour
             StartCoroutine(DealCards());
         }
 
-        if ( !isPlaying ){
+        if ( isPlaying ){
             Play();
         }
     }
@@ -126,38 +127,11 @@ public class GameController : MonoBehaviour
         SortCardsInHand(player3, player3Hand, 3);
         SortCardsInHand(player4, player4Hand, 4);
 
-        Play();
+        isPlaying = true;
     }
 
     private void SortCardsInHand(List<GameObject> hand, Transform midTf, int player){
-        hand.Sort((x,y) => {
-            CardController controllerX = x.GetComponent<CardController>();
-            CardController controllerY = y.GetComponent<CardController>();
-
-            CARD_RANK rankX = controllerX.GetRank();
-            CARD_SUIT suitX = controllerX.GetSuit();
-            CARD_RANK rankY = controllerY.GetRank();
-            CARD_SUIT suitY = controllerY.GetSuit();
-
-            int res = 0;
-
-            if ( rankX > rankY ){
-                res = 1;
-            }
-            else if ( rankX == rankY ){
-                if ( suitX > suitY){
-                    res = 1;
-                }
-                else if ( suitX < suitY ){
-                    res = -1;
-                }
-            }
-            else {
-                res = -1;
-            }
-
-            return res;
-        });
+        hand.Sort(CardComparator);
 
         // set sort layer order and spread cards in hand
         int count = hand.Count;
@@ -188,10 +162,37 @@ public class GameController : MonoBehaviour
 
     }
 
-    private void Play(){
-        isPlaying = true;
+    private int CardComparator(GameObject x, GameObject y){ // 1 -> x > y
+        CardController controllerX = x.GetComponent<CardController>();
+            CardController controllerY = y.GetComponent<CardController>();
 
-        if ( playerPass[turn] ){
+            CARD_RANK rankX = controllerX.GetRank();
+            CARD_SUIT suitX = controllerX.GetSuit();
+            CARD_RANK rankY = controllerY.GetRank();
+            CARD_SUIT suitY = controllerY.GetSuit();
+
+            int res = 0;
+
+            if ( rankX > rankY ){
+                res = 1;
+            }
+            else if ( rankX == rankY ){
+                if ( suitX > suitY){
+                    res = 1;
+                }
+                else if ( suitX < suitY ){
+                    res = -1;
+                }
+            }
+            else {
+                res = -1;
+            }
+
+            return res;
+    }
+
+    private void Play(){
+        if ( playerPass[turn-1] ){
             ShowPlayerHasPassed();
             GoNextTurn();
         }
@@ -199,23 +200,35 @@ public class GameController : MonoBehaviour
             NewRound();
         }
         else {
-            commandController.PutOrPass();
-            if ( commandController.IsPutCommand() ){
-
+            if ( turnState == 0 ){
+                commandController.PutOrPass();
+                turnState = 1;
             }
-            else {  // pass command
-                
-            }
-
-            List<int> putDecision;
-            do
-            {
+            else if ( turnState == 1 ){
+                if ( commandController.IsPutCommand() ){
+                    // todo
+                    turnState = 2;
+                }
+                else if ( commandController.IsPassCommand() ){
+                    // TODO
+                    GoNextTurn();
+                }
+                // wait for command
+            } 
+            else if ( turnState == 2 ){
                 commandController.PutDecision();
-                putDecision = commandController.GetPutDecision();
-            } while ( !IsPutDecisionValid(putDecision) );
-
-            PutCard(putDecision);
-            GoNextTurn();
+                turnState = 3;
+            }
+            else if ( turnState == 3){
+                List<int> putDecision = commandController.GetPutDecision();
+                if ( !IsPutDecisionValid(putDecision) ){
+                    turnState = 2;
+                }
+                else {
+                    PutCard(putDecision);
+                    GoNextTurn();
+                }
+            } 
             
         }
     }
@@ -226,7 +239,8 @@ public class GameController : MonoBehaviour
 
     private void GoNextTurn(){
             turn = (turn % 4) + 1;
-            isPlaying = false;
+            turnState = 0;
+            Debug.Log("go next turn: " + turn);
     }
 
     private void ShowPlayerHasPassed(){
@@ -234,11 +248,14 @@ public class GameController : MonoBehaviour
     }
 
     private bool AreOthersAllPass(){
-        return playerPass[turn] && !(playerPass[(turn%4)+1] || playerPass[(turn%4)+2] || playerPass[(turn%4)+3]);
+        return playerPass[turn-1] && !(playerPass[(turn-1%4)+1] || playerPass[(turn-1%4)+2] || playerPass[(turn-1%4)+3]);
     }
 
     private void NewRound(){
-
+        for(int i=0; i<4; ++i){
+            playerPass[i] = false;
+        }
+        turnState = 0;
     }
 
     private void PutCard(List<int> putDecision){

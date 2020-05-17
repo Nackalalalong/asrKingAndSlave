@@ -437,6 +437,33 @@ MonoBehaviour:
   - {fileID: 21300100, guid: e3edc2f11b6724a42998e4f4a8c70d8b, type: 3}
   - {fileID: 21300102, guid: e3edc2f11b6724a42998e4f4a8c70d8b, type: 3}
   backCard: {fileID: 21300000, guid: 881e8f3288259904c88162f0dbf1b8fe, type: 3}
+--- !u!114 &472007438
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472007436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fa15c2000706cd48bd713079c8be0f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  putType: 1
+  rank: 0
+  suit: 0
+--- !u!114 &472007439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472007436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad4842933debc004f9854b935d0e2391, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &533736411
 GameObject:
   m_ObjectHideFlags: 0

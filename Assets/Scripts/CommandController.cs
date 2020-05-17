@@ -36,7 +36,7 @@ public class CommandController : MonoBehaviour
     public List<int> GetPutDecision()  // PUT_TYPE, RANK, SUIT
     {
         CommandTester tester =  GetComponent<CommandTester>();
-        return new List<int>{tester.putType,tester.rank,tester.suit};
+        return new List<int>{(int)tester.putType,(int)tester.rank,(int)tester.suit};
     }
 
     public void PutOrPass(){ // return true if commmand valid for the purpose

@@ -10,7 +10,7 @@ public enum CARD_SUIT {
     SPRADE, DIAMOND, HEART, CLUB
 }
 
-enum PUT_TYPE {
+public enum PUT_TYPE {
     SOLO, PAIR, TRIPPLE, QUAD, ANY
 }
 

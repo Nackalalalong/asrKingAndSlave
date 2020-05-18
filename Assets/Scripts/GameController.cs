@@ -46,6 +46,7 @@ public class GameController : MonoBehaviour
     public GameObject arrowPlayer1, arrowPlayer2, arrowPlayer3, arrowPlayer4;
     public GameObject passPlayer1, passPlayer2, passPlayer3, passPlayer4;
     public GameObject newRoundText;
+    public GameObject gameOver;
 
     // Start is called before the first frame update
     void Start()
@@ -78,6 +79,16 @@ public class GameController : MonoBehaviour
         if ( Input.GetKeyDown(KeyCode.T) ){
             Debug.Log("start dealing cards");
             StartCoroutine(DealCards());
+        }
+        if ( Input.GetKeyDown(KeyCode.W) ){
+            isGameOver = true;
+            winner = 1;
+            ShowGameOver();
+        }
+        if ( Input.GetKeyDown(KeyCode.L) ){
+            isGameOver = true;
+            winner = 2;
+            ShowGameOver();
         }
 
         if ( isGameOver ){
@@ -576,7 +587,14 @@ public class GameController : MonoBehaviour
             isGameOver = true;
             winner = turn;
             Debug.Log("GameOver winner is " + winner);
+            
+            ShowGameOver();
         }
+    }
+
+    private void ShowGameOver(){
+        gameOver.GetComponent<GameOver>().SetWinner(winner);
+        gameOver.SetActive(true);
     }
 
     private List<GameObject> GetCardsDecision(List<int> putDecision){   // assume that pusDecision is valid

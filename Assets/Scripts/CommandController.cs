@@ -36,7 +36,22 @@ public class CommandController : MonoBehaviour
     public List<int> GetPutDecision()  // PUT_TYPE, RANK, SUIT
     {
         CommandTester tester =  GetComponent<CommandTester>();
-        return new List<int>{(int)tester.putType,(int)tester.rank,(int)tester.suit};
+        int putType = (int)tester.putType;
+        int rank = (int)tester.rank;
+        int suit1 = (int)tester.suit1;
+        int suit2 = (int)tester.suit2;
+        int suit3 = (int)tester.suit3;
+        
+        switch (putType)
+        {
+            case (int)PUT_TYPE.SOLO:
+                suit2 = 1; suit3 = -1; break;
+            case (int)PUT_TYPE.PAIR:
+                suit3 = -1; break;
+        }
+
+        return new List<int>{putType, rank, suit1, suit2, suit3};
+        
     }
 
     public void PutOrPass(){ // return true if commmand valid for the purpose

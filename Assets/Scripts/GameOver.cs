@@ -33,7 +33,7 @@ public class GameOver : MonoBehaviour
     {
 
         // loop over 1 second
-        for (float i = 0; i <= 0.65f; i += Time.deltaTime/2)
+        for (float i = 0; i <= 0.7f; i += Time.deltaTime/3)
         {
             // set color with i as alpha
             gameOverBackground.GetComponent<Image>().color = new Color(0, 0, 0, i);

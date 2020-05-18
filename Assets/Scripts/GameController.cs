@@ -32,6 +32,7 @@ public class GameController : MonoBehaviour
     private bool isGameOver = false;
     private int winner = 1;
     private  PUT_TYPE boardPutType = PUT_TYPE.ANY;
+    private SoundController soundController;
 
     public float dealingCardSpeed = 10.0f;
     public float dealingCardDeltaTime = 0.1f;
@@ -61,6 +62,7 @@ public class GameController : MonoBehaviour
 
         spriteMapper = GetComponent<CardSpriteMapper>();
         commandController = GetComponent<CommandController>();
+        soundController = GetComponent<SoundController>();
 
         InitDeck();
     }   
@@ -138,6 +140,7 @@ public class GameController : MonoBehaviour
         }
         cardController.SetSpeed(dealingCardSpeed);
         dealingCard.SetActive(true);
+        soundController.PlayCardMove();
     }
 
     private IEnumerator DealCards(){  // แจกไพ่ตอนต้นเกม
@@ -164,6 +167,8 @@ public class GameController : MonoBehaviour
         SortCardsInHand(player2, player2Hand, 2);
         SortCardsInHand(player3, player3Hand, 3);
         SortCardsInHand(player4, player4Hand, 4);
+
+        soundController.PlayCardSpacing();
 
         isPlaying = true;
     }
@@ -254,6 +259,7 @@ public class GameController : MonoBehaviour
                 }
                 else if ( commandController.IsPassCommand() ){
                     playerPass[turn-1] = true;
+                    soundController.PlayAwww();
                     ShowPlayerHasPassed();
                     GoNextTurn();
                 }
@@ -335,6 +341,7 @@ public class GameController : MonoBehaviour
                 if ( decision == null ){
                     Debug.Log("Bot " + turn + " pass");
                     playerPass[turn-1] = true;
+                    soundController.PlayAwww();
                     ShowPlayerHasPassed();
                     GoNextTurn();
                 }
@@ -362,20 +369,20 @@ public class GameController : MonoBehaviour
             if ( boardPutType == PUT_TYPE.SOLO && count >= 1){
                 decision = new List<int>{(int)boardPutType, rank, (int)controller.GetSuit(), -1, -1};
             }
-            else if ( boardPutType == PUT_TYPE.PAIR && count >= 2){
+            else if ( boardPutType == PUT_TYPE.PAIR && count >= 2 && i < hand.Count - 1){
                 decision = new List<int>{
                         (int)boardPutType, rank, (int)controller.GetSuit(), 
                         (int)hand[i+1].GetComponent<CardController>().GetSuit(), -1
                     };
             }
-            else if ( boardPutType == PUT_TYPE.TRIPPLE && count >= 3 ){
+            else if ( boardPutType == PUT_TYPE.TRIPPLE && count >= 3 && i < hand.Count - 2){
                 decision = new List<int>{
                         (int)boardPutType, rank, (int)controller.GetSuit(), 
                         (int)hand[i+1].GetComponent<CardController>().GetSuit(),
                         (int)hand[i+2].GetComponent<CardController>().GetSuit(),
                     };
             }
-            else if( boardPutType == PUT_TYPE.QUAD && count >= 4 ){
+            else if( boardPutType == PUT_TYPE.QUAD && count >= 4 && i < hand.Count - 3){
                 decision = new List<int>{
                         (int)boardPutType, rank, -1,-1,-1
                     };
@@ -534,6 +541,7 @@ public class GameController : MonoBehaviour
     }
 
     private IEnumerator NewRound(){
+        isPlaying = false;
         Debug.Log("new round");
         for(int i=0; i<4; ++i){
             playerPass[i] = false;
@@ -545,7 +553,9 @@ public class GameController : MonoBehaviour
         }
         board.Clear();
 
+        yield return new WaitForSeconds(startTurnDelayTime);
         newRoundText.SetActive(true);
+        soundController.PlayNewRound();
         yield return new WaitForSeconds(newRoundDelayTime);
         newRoundText.SetActive(false); 
 
@@ -554,6 +564,7 @@ public class GameController : MonoBehaviour
         passPlayer3.SetActive(false);
         passPlayer4.SetActive(false);
                
+        isPlaying = true;
         isBotPlaying = false;
     }
 
@@ -572,6 +583,7 @@ public class GameController : MonoBehaviour
             board.Add(cardsToPut[i]);
         }
         SpacingCards(cardsToPut, boardCenter);
+        soundController.PlayCardMove();
 
          for(int i=0; i<board.Count; ++i){
             board[i].GetComponent<SpriteRenderer>().sortingOrder = i;
@@ -595,6 +607,13 @@ public class GameController : MonoBehaviour
     private void ShowGameOver(){
         gameOver.GetComponent<GameOver>().SetWinner(winner);
         gameOver.SetActive(true);
+
+        if ( winner == 1 ){
+            soundController.PlayYouWin();
+        }
+        else {
+            soundController.PlayYouLose();
+        }
     }
 
     private List<GameObject> GetCardsDecision(List<int> putDecision){   // assume that pusDecision is valid
@@ -613,7 +632,10 @@ public class GameController : MonoBehaviour
         for(int index=0; index<hand.Count; ++index){
             CardController controller = hand[index].GetComponent<CardController>();
             int suit = (int)controller.GetSuit();
-            if ( rank == (int)controller.GetRank() && (
+            if ( rank == (int)controller.GetRank() && putType == (int)PUT_TYPE.QUAD ){
+                indexes.Add(index);
+            }
+            else if ( rank == (int)controller.GetRank() && (
                 suit == suit1 || suit == suit2 || suit == suit3
             )){
                 indexes.Add(index);

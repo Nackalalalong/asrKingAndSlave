@@ -5,12 +5,15 @@ using UnityEngine.UI;
 
 public class GameOver : MonoBehaviour
 {
+    public AudioSource board;
     public GameObject gameOverBackground;
     public GameObject[] hideGameObj;
     public GameObject[] showGameObj;
     // Start is called before the first frame update
     void Start()
     {
+        board.Stop();
+
         gameOverBackground.SetActive(true);
         StartCoroutine(FadeImage());
         foreach (GameObject gameObject in hideGameObj)

@@ -25,26 +25,27 @@ public class SoundController : MonoBehaviour
     }
 
     public void PlayCardMove(){
-        audioSource.PlayOneShot(cardMove);
+        audioSource.PlayOneShot(cardMove, 0.7f);
     }
 
     public void PlayCardSpacing(){
-        audioSource.PlayOneShot(cardSpacing);
+        audioSource.PlayOneShot(cardSpacing, 0.8f);
     }
 
     public void PlayYouWin(){
-        audioSource.PlayOneShot(youWin);
+        audioSource.PlayOneShot(youWin, 0.65f);
     }
 
     public void PlayYouLose(){
-        audioSource.PlayOneShot(youLose);
+        audioSource.PlayOneShot(youLose, 0.8f);
     }
 
     public void PlayAwww(){
-        audioSource.PlayOneShot(awww);
+        audioSource.PlayOneShot(awww, 0.7f);
     }
 
     public void PlayNewRound(){
-        audioSource.PlayOneShot(newRound);
+        audioSource.PlayOneShot(newRound, 0.6f);
     }
+
 }

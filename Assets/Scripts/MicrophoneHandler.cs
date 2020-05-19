@@ -56,6 +56,7 @@ public class MicrophoneHandler : MonoBehaviour
             Debug.Log("saving");
             SavWav.Save("speak", record);
             Debug.Log("saved");
+            Microphone.End(null);
             string filepath = Path.Combine(Application.dataPath, "speak.wav");
             string textPath = Path.Combine(Application.dataPath, "speak.txt");
             // var thread = new Thread(delegate () {RunCmd(filepath, textPath);});

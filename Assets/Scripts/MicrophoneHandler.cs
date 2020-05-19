@@ -17,8 +17,28 @@ public class MicrophoneHandler : MonoBehaviour
     public GameObject gameController;
     private CommandController commandController;
 
+    private string command;
     void Start(){
         commandController = gameController.GetComponent<CommandController>();
+        foreach (var device in Microphone.devices)
+        {
+            Debug.Log("Name: " + device);
+        }
+    }
+
+    public void Gowajee(){
+        Debug.Log("recording gowajee");
+        record = Microphone.Start(null, false, 6, 16000 );
+        StartCoroutine(Wait());
+    }
+
+    private IEnumerator Wait(){
+        yield return new WaitForSeconds(6);
+
+        SavWav.Save("speak", record);
+        string filepath = Path.Combine(Application.dataPath, "speak.wav");
+        string textPath = Path.Combine(Application.dataPath, "speak.txt");
+        RunCmd(filepath, textPath);
     }
    
     public void Press(){
@@ -36,20 +56,21 @@ public class MicrophoneHandler : MonoBehaviour
             Debug.Log("saving");
             SavWav.Save("speak", record);
             Debug.Log("saved");
-            RunCmd();
+            string filepath = Path.Combine(Application.dataPath, "speak.wav");
+            string textPath = Path.Combine(Application.dataPath, "speak.txt");
+            // var thread = new Thread(delegate () {RunCmd(filepath, textPath);});
+            // thread.Start();
+            RunCmd(filepath, textPath);
         }
     } 
 
-    private void RunCmd(){
-        string filepath = Path.Combine(Application.dataPath, "speak.wav");
-        string textPath = Path.Combine(Application.dataPath, "speak.txt");
+    private void RunCmd(string filepath, string textPath){
         Debug.Log(textPath);
         CallKardiProcess(filepath, textPath);
-        ReadText();
+        ReadText(textPath);
     }
 
-    private void ReadText(){
-        string textPath = Path.Combine(Application.dataPath, "speak.txt");
+    private void ReadText(string textPath){
         string[] lines = System.IO.File.ReadAllLines(textPath);
 
         string command;
@@ -66,6 +87,7 @@ public class MicrophoneHandler : MonoBehaviour
      private  void CallKardiProcess (string path, string textPath)
      {
          Debug.Log("call kardi process");
+
          var processInfo = new System.Diagnostics.ProcessStartInfo("CMD.exe", 
             "/C sox " + path + " -t raw - | nc -w 1 localhost 5050 > " + textPath);
          processInfo.CreateNoWindow = true;

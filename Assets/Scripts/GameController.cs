@@ -30,6 +30,8 @@ public class GameController : MonoBehaviour
     private bool isPlaying = false;
     private bool isBotPlaying = false;
     private bool isGameOver = false;
+    private bool doneGowajee = false;
+
     private int winner = 1;
     private  PUT_TYPE boardPutType = PUT_TYPE.ANY;
     private SoundController soundController;
@@ -66,7 +68,8 @@ public class GameController : MonoBehaviour
         soundController = GetComponent<SoundController>();
 
         InitDeck();
-        StartCoroutine(DealCards());
+        // StartCoroutine(DealCards());
+        commandController.Gowajee();
     }   
 
     private void InitDeck(){
@@ -93,6 +96,11 @@ public class GameController : MonoBehaviour
             isGameOver = true;
             winner = 2;
             ShowGameOver();
+        }
+
+        if ( !doneGowajee && commandController.IsGowajeeDone() ){
+            doneGowajee = true;
+            StartCoroutine(DealCards());
         }
 
         if ( isGameOver ){

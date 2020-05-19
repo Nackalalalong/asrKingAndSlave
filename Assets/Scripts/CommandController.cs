@@ -10,8 +10,10 @@ public class CommandController : MonoBehaviour
     private int testInput = 0;
     bool done;
     bool forPutOrPass = true;
+    private bool isGowajee = false;
     public Text commander;
     public Image commanderBackground;
+    public GameObject microphoneObject;
 
     // Start is called before the first frame update
     void Start()
@@ -25,7 +27,25 @@ public class CommandController : MonoBehaviour
        
     }
 
-    
+    public void Gowajee(){
+        Debug.Log("go wa jee");
+        isGowajee = true;
+        microphoneObject.GetComponent<MicrophoneHandler>().Gowajee();
+        StartCoroutine(WaitForCommand());
+    }
+
+    public bool IsGowajeeDone(){
+        if ( done ){
+            done = false;
+            isGowajee = false;
+            return true;
+        }
+        return false;
+    }
+
+    public string GetGowajee(){
+        return command;
+    }
 
     public void PutDecision(){ // return true if commmand valid for the purpose
         forPutOrPass = false;
@@ -143,7 +163,17 @@ public class CommandController : MonoBehaviour
         this.command = command;
         done = true;
 
-        if ( forPutOrPass ){
+        if ( isGowajee ){
+            if ( command != "โกวาจี สลาฟ ออน"){
+                Debug.Log("command is not go wa jee : " + command);
+                done = false;
+                command = "";
+                Gowajee();
+            }
+            return ;
+        }
+
+        else if ( forPutOrPass ){
             if ( !IsPutCommand() && !IsPassCommand() ){
                 done = false;
                 command = "";

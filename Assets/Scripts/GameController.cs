@@ -48,6 +48,7 @@ public class GameController : MonoBehaviour
     public GameObject passPlayer1, passPlayer2, passPlayer3, passPlayer4;
     public GameObject newRoundText;
     public GameObject gameOver;
+    public GameObject[] playerSpeakObjects;
 
     // Start is called before the first frame update
     void Start()
@@ -65,6 +66,7 @@ public class GameController : MonoBehaviour
         soundController = GetComponent<SoundController>();
 
         InitDeck();
+        StartCoroutine(DealCards());
     }   
 
     private void InitDeck(){
@@ -78,10 +80,10 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if ( Input.GetKeyDown(KeyCode.T) ){
-            Debug.Log("start dealing cards");
-            StartCoroutine(DealCards());
-        }
+        // if ( Input.GetKeyDown(KeyCode.T) ){
+        //     Debug.Log("start dealing cards");
+        //     StartCoroutine(DealCards());
+        // }
         if ( Input.GetKeyDown(KeyCode.W) ){
             isGameOver = true;
             winner = 1;
@@ -144,6 +146,7 @@ public class GameController : MonoBehaviour
     }
 
     private IEnumerator DealCards(){  // แจกไพ่ตอนต้นเกม
+        yield return new WaitForSeconds(1.5f);
         int player = 1;
         System.Random rnd = new System.Random();
         while( deck.Count > 0 ){
@@ -247,10 +250,14 @@ public class GameController : MonoBehaviour
         }
         else {
             arrowPlayer1.SetActive(true);
+            foreach (GameObject gameObject in playerSpeakObjects){
+                gameObject.SetActive(true);
+            }
+ 
             if ( turnState == 0 ){
-                commandController.PutOrPass();
-                turnState = 1;
-                Debug.Log("your turn, press 1 to Put press 2 to pass");
+                turnState = 2;
+                // commandController.PutOrPass();
+                // Debug.Log("your turn, press 1 to Put press 2 to pass");
             }
             else if ( turnState == 1 ){
                 if ( commandController.IsPutCommand() ){
@@ -272,7 +279,14 @@ public class GameController : MonoBehaviour
             else if ( turnState == 3 && commandController.IsPutDecisionReady() ){
                 Debug.Log("processing turn state 3");
                 List<int> putDecision = commandController.GetPutDecision();
-                if ( !IsPutDecisionValid(putDecision) ){
+                Debug.Log("pudes " + putDecision[0]);
+                if ( putDecision.Count == 1 && putDecision[0] == -1 ){ //pass
+                    playerPass[turn-1] = true;
+                    soundController.PlayAwww();
+                    ShowPlayerHasPassed();
+                    GoNextTurn();
+                }
+                else if ( !IsPutDecisionValid(putDecision) ){
                     Debug.Log("decision invalid");
                     ShowPutDecisionInvalid();
                     turnState = 0;
@@ -300,6 +314,9 @@ public class GameController : MonoBehaviour
         }
         else {
             Debug.Log("Bot play " + turn);
+            foreach (GameObject gameObject in playerSpeakObjects){
+                gameObject.SetActive(false);
+            }
 
                 switch (turn)
             {

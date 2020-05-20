@@ -47,7 +47,7 @@ public class MicrophoneHandler : MonoBehaviour
         commanderBackground.color = Color.black;
         if ( isSpeaking ){
             Debug.Log("recording");
-            record = Microphone.Start ( null, false, 10, 16000 );
+            record = Microphone.Start ( null, false, 6, 16000 );
             buttonText.text = "หยุด";
             commandText.text = "...";
         }
@@ -81,6 +81,26 @@ public class MicrophoneHandler : MonoBehaviour
         else {
             command = "";
         }
+
+        string[] texts = command.Trim().Split(' ');
+        if ( texts.Length == 3 ){
+            command = texts[1] + " " + texts[2];
+        }
+
+        if ( texts.Length > 3 ){
+            if ( texts[0] == "ตอง" ){
+                command = texts[1] + " " +  texts[2];
+            }
+        }
+
+        if ( texts.Length == 1 ){
+            command = "ข้าม";
+        }
+
+        if ( command.Contains("ข้าม") || command.Contains("ผ่าน") ){
+            command = "ข้าม";
+        }
+
         commandText.text = command;
         commandController.SetCommand(command);
     }

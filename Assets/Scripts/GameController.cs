@@ -78,6 +78,7 @@ public class GameController : MonoBehaviour
                 deck.Add(new Card(rank,suit));
             }
         }
+        
     }
 
     // Update is called once per frame
@@ -100,6 +101,7 @@ public class GameController : MonoBehaviour
 
         if ( !doneGowajee && commandController.IsGowajeeDone() ){
             doneGowajee = true;
+            playerSpeakObjects[4].GetComponent<UnityEngine.UI.Text>().text = "โกวาจี สลาฟ ออน";
             StartCoroutine(DealCards());
         }
 
@@ -153,9 +155,37 @@ public class GameController : MonoBehaviour
         soundController.PlayCardMove();
     }
 
+    private void AddCard(int player, CARD_RANK rank, CARD_SUIT suit){
+        for(int i=0; i<deck.Count; ++i){
+            if ( deck[i].getRank() == rank && deck[i].getSuit() == suit ){
+                AnimateDealCard(player, deck[i]);
+                deck.RemoveAt(i);
+                return ;
+            }
+        }
+    }
+
     private IEnumerator DealCards(){  // แจกไพ่ตอนต้นเกม
         yield return new WaitForSeconds(1.5f);
         int player = 1;
+        AddCard(1, CARD_RANK.FOUR, CARD_SUIT.HEART);
+        AddCard(2, CARD_RANK.FOUR, CARD_SUIT.SPRADE);
+        AddCard(3, CARD_RANK.FOUR, CARD_SUIT.CLUB);
+        AddCard(4, CARD_RANK.FOUR, CARD_SUIT.DIAMOND);
+        AddCard(1, CARD_RANK.EIGHT, CARD_SUIT.HEART);
+        AddCard(2, CARD_RANK.EIGHT, CARD_SUIT.SPRADE);
+        AddCard(3, CARD_RANK.EIGHT, CARD_SUIT.CLUB);
+        AddCard(4, CARD_RANK.EIGHT, CARD_SUIT.DIAMOND);
+
+        AddCard(1, CARD_RANK.NINE, CARD_SUIT.HEART);
+        AddCard(2, CARD_RANK.NINE, CARD_SUIT.SPRADE);
+        AddCard(3, CARD_RANK.NINE, CARD_SUIT.CLUB);
+        AddCard(4, CARD_RANK.NINE, CARD_SUIT.DIAMOND);
+
+        AddCard(1, CARD_RANK.TWO, CARD_SUIT.HEART);
+        AddCard(2, CARD_RANK.TWO, CARD_SUIT.SPRADE);
+        AddCard(3, CARD_RANK.TWO, CARD_SUIT.CLUB);
+        AddCard(4, CARD_RANK.TWO, CARD_SUIT.DIAMOND);
         System.Random rnd = new System.Random();
         while( deck.Count > 0 ){
 
@@ -434,6 +464,8 @@ public class GameController : MonoBehaviour
 
         bool legal = IsDecisionLegal(putDecision, hand);
         bool enough = HasEnoughCard(putDecision, hand);
+
+        Debug.Log(legal + " " + enough);
 
         return legal && enough; 
     }   

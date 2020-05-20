@@ -164,7 +164,7 @@ public class CommandController : MonoBehaviour
         done = true;
 
         if ( isGowajee ){
-            if ( command != "โกวาจี สลาฟ ออน"){
+            if ( !command.Contains("โกวาจี") ){
                 Debug.Log("command is not go wa jee : " + command);
                 done = false;
                 command = "";
@@ -217,6 +217,14 @@ public class CommandController : MonoBehaviour
             }
             return new List<int>{(int)PUT_TYPE.QUAD, (int)MapRank(texts[1]), -1, -1, -1};
         }
+        // else {
+        //     if ( texts.Length != 3 ){
+        //         return null;
+        //     }
+        //     return new List<int>{
+        //         (int)PUT_TYPE.SOLO, (int)MapRank(texts[1]),
+        //         (int)MapSuit(texts[2]), -1, -1};
+        // }
         else {
             if ( texts.Length != 2 ){
                 return null;
@@ -270,7 +278,7 @@ public class CommandController : MonoBehaviour
         {
             case "ดอกจิก":
                 return CARD_SUIT.SPRADE;
-            case "ข้ามหลามตัด":
+            case "ข้าวหลามตัด":
                 return CARD_SUIT.DIAMOND;
             case "โพธิ์แดง":
                 return CARD_SUIT.HEART;
